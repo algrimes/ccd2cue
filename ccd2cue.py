@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
 https://github.com/crumpx/ccd2cue.git
 '''
 
-import ConfigParser
+import configparser
 import os
 
 def ConfigSectionMap(Config, section):
@@ -31,9 +31,9 @@ def CCD2CUE(ccdsheet):
         if os.path.splitext(f)[1] in imagetype:
             imgfile = f
 
-    Config = ConfigParser.ConfigParser()
+    Config = configparser.ConfigParser()
     Config.read(ccdsheet)
-    cuefile = open(cuesheet, 'wb')
+    cuefile = open(cuesheet, 'w')
 
     track_counter = 0
     BEGIN = False
@@ -55,10 +55,10 @@ def CCD2CUE(ccdsheet):
 
         if BEGIN is True:
             track_counter += 1
-            if trackinfo['second'] == 0:
+            if trackinfo['second'] in [0,1]:
                 if trackinfo['minute'] >= 1:
                     trackinfo['minute'] -= 1
-                    trackinfo['second'] = 60
+                    trackinfo['second'] = 60 + trackinfo['second']
                 else:
                     trackinfo['minute'] = 0
                     trackinfo['second'] = 0
