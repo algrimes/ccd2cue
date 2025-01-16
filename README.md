@@ -8,10 +8,6 @@ Loaded with OpenEMU v1.03
 
 usage:
 
-ccd2cue.py convert --ccd CCDSHEET 
-
-requared arguments:
-
-  --ccd CCDSHEET  ccd file name
+ccd2cue.py --ccd [path_to_ccd]
 
 
