@@ -26,9 +26,11 @@ def CCD2CUE(ccdsheet):
     cuesheet = os.path.join(filename[0]+'.cue')
     imagetype=('.img','.bin','.iso')
     imgfile = ''
-    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    basedir = os.path.dirname(ccdsheet)
+    files = list(filter(lambda f: os.path.isfile(os.path.join(basedir,f)), os.listdir(basedir)))
     for f in files:
-        if os.path.splitext(f)[1] in imagetype:
+
+        if os.path.splitext(f)[1].casefold() in map(str.casefold, imagetype):
             imgfile = f
 
     Config = configparser.ConfigParser()
