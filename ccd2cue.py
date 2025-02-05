@@ -7,6 +7,7 @@ https://github.com/crumpx/ccd2cue.git
 
 import configparser
 import os
+from datetime import timedelta
 
 def ConfigSectionMap(Config, section):
     dict1 = {}
@@ -40,7 +41,7 @@ def CCD2CUE(ccdsheet):
     track_counter = 0
     BEGIN = False
 
-    cuefile.write("FILE \"%s\" BINARY\r\n" % (imgfile))
+    cuefile.write("FILE \"%s\" BINARY\n" % (imgfile))
     for item in Config.sections():
         if 'Entry' not in item:
             continue
@@ -51,27 +52,33 @@ def CCD2CUE(ccdsheet):
         trackinfo['minute'] = int(ConfigSectionMap(Config, item)['pmin'])
         trackinfo['second'] = int(ConfigSectionMap(Config,item)['psec'])
         trackinfo['frame'] = int(ConfigSectionMap(Config,item)['pframe'])
+        
+
 
         if int(ConfigSectionMap(Config,item)['plba']) == 0:
             BEGIN = True
 
-        if BEGIN is True:
+        if BEGIN:
+        
             track_counter += 1
-            if trackinfo['second'] in [0,1]:
-                if trackinfo['minute'] >= 1:
-                    trackinfo['minute'] -= 1
-                    trackinfo['second'] = 60 + trackinfo['second']
-                else:
-                    trackinfo['minute'] = 0
-                    trackinfo['second'] = 0
-            trackinfo['second'] -= 2
-            cuefile.write("  TRACK %02d %s\r\n" \
-                  "    INDEX %02d %02d:%02d:%02d\r\n" % (track_counter,
-                                               "MODE1/2352" if tracktype == '0x04' else 'AUDIO',
-                                               trackindex,
-                                               trackinfo['minute'],
-                                               trackinfo['second'],
-                                               trackinfo['frame'],))
+            
+            if track_counter == 1:
+                cuefile.write("  TRACK 01 MODE1/2352\n" \
+                              "    INDEX 01 00:00:00\n")
+            else:
+                index0 = timedelta(minutes=trackinfo['minute'],seconds=trackinfo['second']) - timedelta(seconds=4)                  
+                index0_m = int(index0.seconds/60)
+                index0_s = int(index0.seconds - index0_m*60)
+                
+                index1 = timedelta(minutes=trackinfo['minute'],seconds=trackinfo['second']) - timedelta(seconds=2)                  
+                index1_m = int(index1.seconds/60)
+                index1_s = int(index1.seconds - index1_m*60)
+                
+                cuefile.write(
+                f"""  TRACK {track_counter} AUDIO\n"""
+                f"""    INDEX 00 {index0_m:02}:{index0_s:02}:{trackinfo['frame']:0>2}\n"""
+                f"""    INDEX 01 {index1_m:02}:{index1_s:02}:{trackinfo['frame']:0>2}\n"""
+                )
 
     cuefile.close()
 if __name__ == '__main__':
